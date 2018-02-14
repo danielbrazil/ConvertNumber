@@ -30,8 +30,8 @@ namespace ConvertNumbers
             int iAnswerOption = 0;
             bool bAnswerOption = false;
 
-            Thread.CurrentThread.CurrentCulture = new CultureInfo("en-US");
-            Thread.CurrentThread.CurrentUICulture = new CultureInfo("en-US");
+            //Thread.CurrentThread.CurrentCulture = new CultureInfo("en-US");
+            //Thread.CurrentThread.CurrentUICulture = new CultureInfo("en-US");
 
 
 
@@ -105,6 +105,8 @@ namespace ConvertNumbers
             sReceiveNumber = Console.ReadLine();
             Console.WriteLine("-------------------------------------------------------");
             Console.WriteLine("Binary-->Decimal: {0}", ConvertBinaryTo(sReceiveNumber, eConvertNumber.deci));
+            Console.WriteLine("-------------------------------------------------------");
+            Console.WriteLine("Binary-->Octal: {0}", ConvertBinaryTo(sReceiveNumber, eConvertNumber.octal));
 
 
         }
@@ -287,7 +289,9 @@ namespace ConvertNumbers
         static string ConvertBinaryTo(string sNumber, eConvertNumber eType)
         {
             string sResult = string.Empty;
-            double dType = 0;
+            string sTemp = string.Empty;
+            string sTempOctal = string.Empty;
+            string sTempNumber = string.Empty;
             double dResultRest = 0;
 
             //byNumber = byte.Parse(sNumber);
@@ -296,23 +300,112 @@ namespace ConvertNumbers
             switch (eType)
             {
                 case eConvertNumber.deci:
-                    dType = BIRNARY;
+                    dResultRest = 0;
                     for (int i = 0; i <= sNumber.Length - 1; i++)
                     {
-                        dResultRest += int.Parse(sNumber.Substring(i, 1)) * Math.Pow(dType, i);
+                        dResultRest += int.Parse(sNumber.Substring(i, 1)) * Math.Pow(2, i);
                     }
+                    sResult = dResultRest.ToString();
                     break;
                 case eConvertNumber.octal:
-                    dType = OCTAL;
+                    /*take the binary number and verify your length
+                      the length should be multiple of 3
+                      example: 1111 this number have 4 elements and need put more 2 0 in left side, like 001111 ==> 001 111
+                      after that you need compare each group of 3 numbers with number 421. Put binary number and 421 below, 
+                      if binary number for 0 repeat 0, if binary number for 1 put the number reference below.
+                      example:
+                      001 111
+                      421 421
+                      -------
+                      001 421
+
+                      Now, just sum the result separate
+
+                      0+0+1 and 4+2+1 = 1 and 7
+                      the result is 17 that is 1111 in octal is 17
+
+                    lenght % 3 == 0 the number have elements of 3
+                    */
+                    if (sNumber.Length % 3 != 0)
+                    {
+                        int iRest = 0;
+                        iRest = sNumber.Length % 3;
+                        if (iRest == 1)
+                        {
+                            sNumber = "00" + sNumber;
+                        }
+                        else if (iRest == 2)
+                        {
+                            sNumber = "0" + sNumber;
+                        }
+                        iRest = sNumber.Length % 3;
+                    }
+                    sTempOctal = string.Empty;
+                    while (sNumber.Length > 0)
+                    {
+                        sTemp = sNumber.Substring(0, 3);
+
+                        if (sNumber.Length > 0)
+                        {
+                            for (int i = 0; i <= sTemp.Length - 1; i++)
+                            {
+                                if ((int.Parse(sTemp.Substring(i, 1)) == 0 && i == 0) ||
+                                    (int.Parse(sTemp.Substring(i, 1)) == 0 && i == 1) ||
+                                    (int.Parse(sTemp.Substring(i, 1)) == 0 && i == 2))
+                                {
+                                    sTempOctal += "0";
+
+                                }
+                                if (int.Parse(sTemp.Substring(i, 1)) == 1 && i == 0)
+                                {
+                                    sTempOctal += "4";
+                                }
+                                if (int.Parse(sTemp.Substring(i, 1)) == 1 && i == 1)
+                                {
+                                    sTempOctal += "2";
+                                }
+                                if (int.Parse(sTemp.Substring(i, 1)) == 1 && i == 2)
+                                {
+                                    sTempOctal += "1";
+                                }
+                                sTempNumber += int.Parse(sTemp.Substring(i, 1));
+                            }
+                            sTempNumber += " ";
+                            sTempOctal += " ";
+                        }
+                        sNumber = sNumber.Substring(3, sNumber.Length - 3);
+                    }
+                    foreach (string sTemp2 in sTempOctal.Split(' '))
+                    {
+                        dResultRest = 0;
+                        for (int i = 0; i <= sTemp2.Length - 1; i++)
+                        {
+                            dResultRest += int.Parse(sTemp2.Substring(i, 1));
+                        }
+                        if (sTemp2.Length > 0)
+                            sResult += dResultRest.ToString();
+                    }
+
+                    //sResult = InvertString(sResult);
                     break;
                 case eConvertNumber.hexa:
-                    dType = HEXA;
+                    /*
+                     * For calculate binary to hexa is the same for calculate binary to octal, but you need 8421 and separete binary in groups of 4 elements
+                     * And when final result is more than 9, you need replace for letters like 10 = a, 11 = b, 12 = c, 13 = d, 14 = e and 15 = f
+                     * Example:
+                     * Binary 1111
+                     * 1111
+                     * 8421
+                     * ----
+                     * 15 = f
+                     * the result is letter f that is 1111 in hexa is f
+                     */
                     break;
                 default:
-                    dType = 0;
+
                     break;
             }
-            sResult = dResultRest.ToString();
+
 
             return sResult;
         }
